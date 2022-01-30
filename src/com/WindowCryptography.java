@@ -12,7 +12,7 @@ import static javax.swing.GroupLayout.Alignment.BASELINE;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
-public class WindowCryptography extends JFrame {
+public class WindowCryptography {
 
     private JPanel contentPane;
     private String fileDirectory = "";

@@ -7,6 +7,8 @@ import java.awt.*;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.Utils.*;
 import static javax.swing.GroupLayout.Alignment.BASELINE;
@@ -103,53 +105,49 @@ public class WindowBruteforceAnalysis extends JFrame {
         String fileName = fileIn.getName().substring(0, fileIn.getName().lastIndexOf('.'));
         String fileExtension = fileIn.getName().substring(fileIn.getName().lastIndexOf('.') + 1);
         File fileOut = new File(fileIn.getParent() + File.separator + fileName + "_Bruteforce_decode." + fileExtension);
-
         HashMap<Integer, Integer> result = new HashMap<>();
+        String strEncoded = "";
 
-        try (FileReader fr = new FileReader(fileIn);
-             BufferedReader reader = new BufferedReader(fr)) {
-
-            int minKey = 0;
-            int maxkey = cryptoDefaultAlphabet.length() - 1;
-            RusWords rusWords = RusWords.getInstance();
-
-            String line = reader.readLine();
-            StringBuilder strEncoded = new StringBuilder();
-            int count = 0;
-            while (line != null || count < 100) {
-                strEncoded.append(" ").append(line);
-                line = reader.readLine();
-                count++;
-            }
-
-            for (int key = minKey; key <= maxkey; key++) {
-                char[] chars = strEncoded.toString().toCharArray();
-                for (int j = 0; j < chars.length; j++) {
-                    chars[j] = encryptChar(chars[j], key);
-                }
-                String strDencoded = new String(chars);
-
-                /*Анализируем адекватность пробного текста*/
-                String[] words = strDencoded.split(" ");
-                result.put(key, 0);
-                for (String word : words) {
-                    if (rusWords.contains(word)) {
-                        result.put(key, result.get(key) + 1);
-                    }
-                }
-            }
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
+        try {
+            strEncoded = readFile(fileDirectory);
+        } catch (IOException e) {
+            log.write(e.getMessage());
         }
 
-        int cryptoKey = 0;
-        int count = 0;
-        for (Map.Entry<Integer, Integer> entry : result.entrySet()) {
-            if (entry.getValue() > count){
-                count = entry.getValue();
-                cryptoKey = entry.getKey();
+        int minKey = 0;
+        int maxkey = cryptoDefaultAlphabet.length() - 1;
+
+        for (int key = minKey; key <= maxkey; key++) {
+            result.put(key, 0);
+            char[] chars = strEncoded.toCharArray();
+            for (int j = 0; j < chars.length; j++) {
+                chars[j] = encryptChar(chars[j], key);
+            }
+
+
+            /*Анализируем адекватность пробного текста*/
+            String strDecoded = new String(chars);
+            List<Map.Entry<Character, Integer>> letrasContadas = countLetras(strDecoded);
+
+            for (int i = 0; i < 5; i++) {
+                if (letrasContadas.get(i).getKey() == ' '){
+                    result.put(key, result.get(key) + 10);
+                }
+            }
+
+            String[] words = strDecoded.split(" ");
+            for (String word : words) {
+                if (word.length() < 24) {
+                    result.put(key, result.get(key) + 1);
+                }else{
+                    result.put(key, result.get(key) - 1);
+                }
             }
         }
+
+        var sortedKeysList = result.entrySet().stream().sorted((e1, e2) -> -e1.getValue().compareTo(e2.getValue())).collect(Collectors.toList());
+        int cryptoKey = sortedKeysList.get(0).getKey();
+
         log.write("Подобранный ключ: " + cryptoKey);
 
 

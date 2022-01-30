@@ -78,6 +78,11 @@ public class WindowPrincipal extends JFrame{
 
 
     private void openStatisticAnalysis() {
-        JOptionPane.showMessageDialog(null, "В разработке....", "Упс..", JOptionPane.INFORMATION_MESSAGE);
+        if (getTitle().equals("CryptographyUtilita::StatisticAnalysis"))
+            return;
+        WindowStatisticAnalysis statisticAnalysis = new WindowStatisticAnalysis();
+        setContentPane(statisticAnalysis.getContentPane());
+        setTitle("CryptographyUtilita::StatisticAnalysis");
+        revalidate();
     }
 }

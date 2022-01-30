@@ -35,7 +35,7 @@ public class Log {
 
     public void write(String str){
         Date date = Calendar.getInstance().getTime();
-        textAreaLog.append(sdf.format(date) + " :: " + str);
+        textAreaLog.append(sdf.format(date) + " -> " + str);
         textAreaLog.append(System.lineSeparator());
     }
     public void write(Integer i){
